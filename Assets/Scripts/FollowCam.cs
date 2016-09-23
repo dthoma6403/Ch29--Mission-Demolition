@@ -3,29 +3,40 @@ using System.Collections;
 
 public class FollowCam : MonoBehaviour {
 
-	static public FollowCam  S; // a FollowCam Singleton
+	static public FollowCam S;   //singleton
 	
-	// fields set in the Unity Inspector pane
-	public bool              _____________________________;
+	public float easing = 0.05f;
+	public Vector2 minXY;
+	public bool _________________________;
 	
-	// fields set dynamically
-	public GameObject        poi; // The point of interest
-	public float             camZ; // The desired Z pos of the camera
+	public GameObject poi;    //point of interest
+	public float camZ;        //desired z position of the camera
 	
-	void Awake() {
+	// Use this for initialization
+	void Start () {
 		S = this;
 		camZ = this.transform.position.z;
 	}
 	
-	void Update () {
-		// if there's only one line following an if, it doesn't need braces
-		if (poi == null) return; // return if there is no poi
-		
-		// Get the position of the poi
-		Vector3 destination = poi.transform.position;
-		// Retain a destination.z of camZ
+	// Update is called once per frame
+	void FixedUpdate () {
+		Vector3 destination;
+		if (poi == null) {
+			destination = Vector3.zero;        
+		} else {
+			destination = poi.transform.position;
+			if(poi.tag == "Projectile"){
+				if(poi.GetComponent<Rigidbody>().IsSleeping()){
+					poi = null;
+					return;
+				}
+			}
+		}
+		destination.x = Mathf.Max (minXY.x, destination.x);
+		destination.y = Mathf.Max (minXY.y, destination.y);
+		destination = Vector3.Lerp (transform.position, destination, easing);
 		destination.z = camZ;
-		// Set the camera to the destination
 		transform.position = destination;
+		this.GetComponent<Camera>().orthographicSize = destination.y + 10;
 	}
 }
